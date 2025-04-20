@@ -5,21 +5,53 @@ struct MissionsView: View {
     @StateObject private var viewModel = MissionsViewModel()
     @State private var selectedImages: [UIImage] = []
     @AppStorage("selectedTeam") var selectedTeam: String?
+    var opacity = 1
     
     var body: some View {
-        ScrollView {
-            missions
-                .padding(.horizontal, 16)
+        NavigationView {
+            ScrollView {
+                content
+                    .padding(.horizontal, 16)
+            }
+        }
+        .navigationBarHidden(true)
+    }
+    
+    @ViewBuilder
+    var rules: some View {
+        if viewModel.showRulesSections {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "xmark")
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .onTapGesture {
+                        viewModel.showRulesSections.toggle()
+                    }
+                VStack(alignment: .leading, spacing: 4) {
+                    Group {
+                        Text("1. Bla bla exmaple hajnsfnnjfd")
+                        Text("2. Bla bla eeefdfdmaple hajnsfnnjfd")
+                        Text("3. Bla bla fdfdfdfdfdfd hajnsfnnjfd")
+                        Text("4. Stefi ashdajsdas points")
+                    }
+                    .font(.custom("PlusJakartaSans-Light", size: 16))
+                }
+                Spacer()
+            }
+            .padding(.all, 16)
+            .background(RoundedRectangle(cornerRadius: 8).stroke(Color.appRed.opacity(0.5),
+                                                                  lineWidth: 1))
         }
     }
     
-    var missions: some View {
+    var content: some View {
         VStack(alignment: .leading) {
             if let selectedTeam {
                 Text(selectedTeam)
                     .bold()
-                    .font(.custom("PlusJakartaSans-Bold", size: 24))
+                    .font(.custom("PlusJakartaSans-Light", size: 24))
             }
+            rules
             ForEach(viewModel.missions) { mission in
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
@@ -41,7 +73,7 @@ struct MissionsView: View {
                         placeholderImage(mission: mission)
                     }
                 }
-                .background(RoundedRectangle(cornerRadius: 12).stroke(.appBlue, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 12).stroke(Color.appBlue, lineWidth: 1))
                 .padding(.vertical, 16)
                 .sheet(isPresented: $viewModel.showImagePicker, onDismiss: {
                     viewModel.upload(image: selectedImages)
@@ -69,7 +101,7 @@ struct MissionsView: View {
         HStack(spacing: 6) {
             Image(systemName: "plus")
                 .renderingMode(.template)
-                .foregroundStyle(.appBlue)
+                .foregroundStyle(Color.appBlue)
                 .onTapGesture {
                     viewModel.onSubmitTap()
                     viewModel.selectedMission = mission
@@ -93,13 +125,13 @@ struct MissionsView: View {
     private func placeholderImage(mission: Mission) -> some View {
         ZStack {
             Rectangle()
-                .fill(.appBlue.opacity(0.1))
+                .fill(Color.appBlue.opacity(0.1))
                 .frame(width: 80, height: 80)
                 .cornerRadius(6)
                 .padding(8)
             Image(systemName: "plus")
                 .renderingMode(.template)
-                .foregroundStyle(.appBlue)
+                .foregroundStyle(Color.appBlue)
         }
         .onTapGesture {
             viewModel.onSubmitTap()
@@ -110,7 +142,7 @@ struct MissionsView: View {
     private func addAction(mission: Mission) -> some View {
         Image(systemName: "plus.circle")
             .renderingMode(.template)
-            .foregroundStyle(.appRed)
+            .foregroundStyle(Color.appRed)
             .padding(.trailing, 4)
             .onTapGesture {
                 viewModel.onSubmitTap()

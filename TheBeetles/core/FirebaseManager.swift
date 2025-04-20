@@ -4,7 +4,6 @@ import FirebaseStorage
 class FirebaseManager {
     static let shared = FirebaseManager()
     let db = Firestore.firestore()
-    var url: String = ""
     
     @MainActor
     func upload(_ images: [UIImage], item mission: Mission, team: String) async throws -> [URL] {
@@ -92,21 +91,43 @@ class FirebaseManager {
         }
     }
     
-    func fetchMap() async {
-        do {
-            self.db.collection("map").getDocuments { snapshot, error in
+    func fetchMap() async -> String {
+        await withCheckedContinuation { continuation in
+            self.db.collection("data").document("map").getDocument { document, error in
                 if let error = error {
                     print("Failed to fetch map: \(error)")
+                    continuation.resume(returning: "https://www.google.com/maps/d/u/2/edit?mid=1HDNBzc6_WrCfRP1fcPSiNAr7DYcIXmY&usp=sharing")
                     return
                 }
                 
-                if let document = snapshot?.documents.first {
+                if let document = document, document.exists {
                     let data = document.data()
-                    if let urlString = data["url"] as? String {
-                        self.url = urlString
+                    if let urlString = data?["url"] as? String {
+                        continuation.resume(returning: urlString)
+                    } else {
+                        continuation.resume(returning: "https://www.google.com/maps/d/u/2/edit?mid=1HDNBzc6_WrCfRP1fcPSiNAr7DYcIXmY&usp=sharing")
                     }
                 } else {
-                    self.url = "https://www.google.com/maps/d/u/2/edit?mid=1HDNBzc6_WrCfRP1fcPSiNAr7DYcIXmY&usp=sharing"
+                    continuation.resume(returning: "https://www.google.com/maps/d/u/2/edit?mid=1HDNBzc6_WrCfRP1fcPSiNAr7DYcIXmY&usp=sharing")
+                }
+            }
+        }
+    }
+    
+    func fetchMissions() async -> [String:String] {
+        await withCheckedContinuation { continuation in
+            self.db.collection("data").document("missions").getDocument { document, error in
+                if let error = error {
+                    print("Failed to fetch map: \(error)")
+                    continuation.resume(returning: [:])
+                    return
+                }
+                
+                if let challenges = document?.data() as? [String:String] {
+                    continuation.resume(returning: challenges)
+                } else {
+                    print("No challenges found or wrong format.")
+                    continuation.resume(returning: [:])
                 }
             }
         }

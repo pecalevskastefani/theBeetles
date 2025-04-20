@@ -20,28 +20,32 @@ class Mission: Identifiable {
 }
 
 class MissionsViewModel: ObservableObject {
-    @Published var missions: [Mission] = [Mission(title: "Mission 1 title", subtitle: "Mission 1 subtitle"),
-                               Mission(title: "Mission 2 title", subtitle: "Mission 2 subtitle"),
-                               Mission(title: "Mission 3 title", subtitle: "Mission 3 subtitle")]
+    @Published var missions: [Mission] = []
     @Published var showImagePicker: Bool = false
+    @Published var showRulesSections: Bool = true
     @Published var onImageTap: Bool = false
     @AppStorage("selectedTeam") var team = ""
     var selectedMission: Mission? = nil
     
     init() {
-        fetchImages()
+        fetchMissions()
     }
     
     func onSubmitTap()  {
         showImagePicker.toggle()
     }
     
-    func fetchImages() {
+    func fetchMissions() {
         Task { @MainActor in
             do {
+                let result = await FirebaseManager.shared.fetchMissions()
+                let items = result.compactMap { Mission(title: $0.key, subtitle: $0.value)}
                 await FirebaseManager.shared.fetchImages(team: team) { missions in
-                    guard !missions.isEmpty else { return }
-                    self.updateMissions(fetchedMissions: missions)
+                    guard !missions.isEmpty else {
+                        self.missions = items
+                        return
+                    }
+                    self.updateMissions(fetchedMissions: missions, missions: items)
                 }
             }
         }
@@ -73,11 +77,12 @@ class MissionsViewModel: ObservableObject {
         self.missions = updatedData
     }
     
-    func updateMissions(fetchedMissions: [Mission]) {
+    func updateMissions(fetchedMissions: [Mission], missions: [Mission]) {
         for (index, originalMission) in missions.enumerated() {
             if let fetchedMission = fetchedMissions.first(where: { $0.title == originalMission.title }) {
                 missions[index].imageUrl = fetchedMission.imageUrl
             }
         }
+        self.missions = missions
     }
 }

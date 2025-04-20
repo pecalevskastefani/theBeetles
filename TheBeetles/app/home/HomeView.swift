@@ -9,17 +9,16 @@ struct HomeView: View {
     
     var body: some View {
         TabView(selection: $selectedIndex) {
-            MapView()
-                .clipped()
-                .tabItem {
-                    Label("Map", systemImage: "mappin.and.ellipse")
-                }
-                .tag(0)
-            
             MissionsView()
                 .clipped()
                 .tabItem {
                     Label("Missions", systemImage: "square.and.pencil")
+                }
+                .tag(0)
+            MapView()
+                .clipped()
+                .tabItem {
+                    Label("Map", systemImage: "mappin.and.ellipse")
                 }
                 .tag(1)
         }

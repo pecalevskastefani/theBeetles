@@ -13,7 +13,6 @@ class OnboardingViewModel: ObservableObject {
     }
 }
 struct OnboardingView: View {
-    var teams = ["Team Crackheads", "Team Bananas", "Team Stefi", "Team Jimmy"]
     @ObservedObject var viewModel = OnboardingViewModel()
     
     var body: some View {
@@ -56,7 +55,7 @@ struct OnboardingView: View {
         } else {
             TextField("Add your team's name", text: $viewModel.team)
                 .multilineTextAlignment(.center)
-                .overlay(Rectangle().frame(height: 2).padding(.top, 34).foregroundStyle(.appBlue.opacity(0.6)))
+                .overlay(Rectangle().frame(height: 2).padding(.top, 34).foregroundStyle(Color.appBlue.opacity(0.6)))
                 .frame(width: UIScreen.main.bounds.size.width * 0.5)
         }
     }
@@ -79,25 +78,6 @@ struct OnboardingView: View {
                 .font(.custom("PlusJakartaSans-LightItalic", size: 20))
                 .multilineTextAlignment(.center)
         }
-    }
-    
-    private var selectTeamDropDown: some View {
-        Menu(content: {
-            ForEach(teams, id: \.self) { team in
-                Button(action: {
-                    viewModel.team = team
-                }, label: {
-                    Text(team)
-                })
-            }
-        }, label:  { Text("\(viewModel.team) ") +
-            Text(Image(systemName: "chevron.down"))
-        })
-        .padding(.vertical, 16)
-        .padding(.horizontal, 32)
-        .font(.custom("PlusJakartaSans-Light", size: 16))
-        .foregroundStyle(Color.black)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color.appLightGray))
     }
     
     private var action: some View {
