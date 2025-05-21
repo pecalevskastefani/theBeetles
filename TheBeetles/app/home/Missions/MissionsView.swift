@@ -157,7 +157,7 @@ struct MissionsView: View {
     
     private func subtitle(from text: String) -> some View {
         Text(text)
-            .font(.custom("PlusJakartaSans-Light", size: 16))
+            .font(.custom("PlusJakartaSans-Light", size: 12))
     }
 }
 
