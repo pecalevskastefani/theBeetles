@@ -3,7 +3,7 @@ import SwiftData
 
 class OnboardingViewModel: ObservableObject {
     @AppStorage("selectedTeam") var selectedTeam: String?
-    @Published var team: String = ""
+    @Published var team: String = "Team: "
     @Published var alreadySelectedTeam: Bool = false
     
     init() {
@@ -24,7 +24,9 @@ struct OnboardingView: View {
                 Spacer()
                 action
             }
+            .background(GradientBackgroundView())
         }
+        .ignoresSafeArea(edges: .all)
     }
     
     private var content: some View {
@@ -53,12 +55,20 @@ struct OnboardingView: View {
                     .font(.custom("PlusJakartaSans-Bold", size: 20))
             }
         } else {
-            TextField("Add your team's name", text: $viewModel.team)
-                .multilineTextAlignment(.center)
-                .overlay(Rectangle().frame(height: 2).padding(.top, 34).foregroundStyle(Color.appBlue.opacity(0.6)))
-                .frame(width: UIScreen.main.bounds.size.width * 0.5)
+            ZStack {
+                if viewModel.team.isEmpty {
+                    Text("Add your team's name")
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                TextField("Add your team's name", text: $viewModel.team)
+                    .multilineTextAlignment(.center)
+                    .overlay(Rectangle().frame(height: 2).padding(.top, 34).foregroundStyle(Color.appBlue.opacity(0.8)))
+                    .frame(width: UIScreen.main.bounds.size.width * 0.5)
+                
+            }
         }
     }
+    
     
     private var logo: some View {
         Image(.theBeetlesLogo)
@@ -72,25 +82,29 @@ struct OnboardingView: View {
     private var info: some View {
         VStack(spacing: 4) {
             Text("Welcome to")
-                .font(.custom("PlusJakartaSans-LightItalic", size: 20))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
             Text("'The Beetles Treasure Hunt'")
-                .font(.custom("PlusJakartaSans-LightItalic", size: 20))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
     }
     
     private var action: some View {
         NavigationLink(destination: HomeView(selectedTeam: viewModel.team)) {
-            Text("Get started")
-                .font(.custom("PlusJakartaSans-Bold", size: 16))
-                .padding(.vertical, 10)
-                .foregroundStyle(.white)
-                .background(RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.appRed)
-                    .frame(width: UIScreen.main.bounds.size.width * 0.4)
-                )
-                .padding(.bottom, 24)
+            if !viewModel.team.isEmpty {
+                Text("Get started")
+                    .font(.custom("PlusJakartaSans-Bold", size: 16))
+                    .padding(.vertical, 10)
+                    .foregroundStyle(.white)
+                    .background(RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.appRed)
+                        .frame(width: UIScreen.main.bounds.size.width * 0.4)
+                    )
+                    .padding(.bottom, 24)
+            }
         }
     }
 }

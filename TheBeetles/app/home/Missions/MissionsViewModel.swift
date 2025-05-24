@@ -85,4 +85,14 @@ class MissionsViewModel: ObservableObject {
         }
         self.missions = missions
     }
+    
+    func onImageTap(mission: Mission) {
+        if mission.imageUrl != nil {
+            onImageTap.toggle()
+            selectedMission = mission
+        } else {
+            onSubmitTap()
+            selectedMission = mission
+        }
+    }
 }

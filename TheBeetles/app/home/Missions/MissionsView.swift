@@ -5,16 +5,26 @@ struct MissionsView: View {
     @StateObject private var viewModel = MissionsViewModel()
     @State private var selectedImages: [UIImage] = []
     @AppStorage("selectedTeam") var selectedTeam: String?
-    var opacity = 1
     
     var body: some View {
-        NavigationView {
+        VStack(alignment: .center) {
+            if let selectedTeam {
+                Text(selectedTeam)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+            }
             ScrollView {
                 content
+                    .padding(.top)
+                    .padding(.bottom, 64)
                     .padding(.horizontal, 16)
             }
+            
         }
+        .padding(.top, 64)
+        .ignoresSafeArea(.all)
         .navigationBarHidden(true)
+        .background(GradientBackgroundView())
     }
     
     @ViewBuilder
@@ -45,50 +55,35 @@ struct MissionsView: View {
     }
     
     var content: some View {
-        VStack(alignment: .leading) {
-            if let selectedTeam {
-                Text(selectedTeam)
-                    .bold()
-                    .font(.custom("PlusJakartaSans-Light", size: 24))
-            }
-            rules
-            ForEach(viewModel.missions) { mission in
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        VStack(alignment: .leading) {
-                            title(from: mission.title)
-                            HStack {
-                                subtitle(from: mission.subtitle)
-                                Spacer()
-//                                                                if mission.imageUrl == nil {
-//                                                                    addAction(mission: mission)
-//                                                                }
-                            }
-                        }
-                        .padding()
-                    }
-                    if let url = mission.imageUrl {
-                        image(imageUrl: url, mission: mission)
-                    } else {
-                        placeholderImage(mission: mission)
-                    }
+        VStack(alignment: .center) {
+         //   rules
+            if viewModel.missions.isEmpty {
+                VStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
                 }
-                .background(RoundedRectangle(cornerRadius: 12).stroke(Color.appBlue, lineWidth: 1))
-                .padding(.vertical, 16)
-                .sheet(isPresented: $viewModel.showImagePicker, onDismiss: {
-                    viewModel.upload(image: selectedImages)
-                }) {
-                    ImagePicker(selectedImages: $selectedImages)
-                }
-                .sheet(isPresented: $viewModel.onImageTap, onDismiss: {
-                    viewModel.selectedMission = nil
-                }) {
-                    if let image = viewModel.selectedMission?.imageUrl {
-                        VStack(alignment: .center, spacing: 0) {
-                            VStack {
-                                WebImage(url: image)
-                                    .resizable()
-                                    .scaledToFit()
+                .frame(width: UIScreen.main.bounds.width)
+            } else {
+                ForEach(viewModel.missions) { mission in
+                    MissionCardView(mission: mission,
+                                    onTapAction: { viewModel.onImageTap(mission: mission) })
+                    .padding(.vertical, 16)
+                    .sheet(isPresented: $viewModel.showImagePicker, onDismiss: {
+                        viewModel.upload(image: selectedImages)
+                    }) {
+                        ImagePicker(selectedImages: $selectedImages)
+                    }
+                    .sheet(isPresented: $viewModel.onImageTap, onDismiss: {
+                        viewModel.selectedMission = nil
+                    }) {
+                        if let image = viewModel.selectedMission?.imageUrl {
+                            VStack(alignment: .center, spacing: 0) {
+                                VStack {
+                                    WebImage(url: image)
+                                        .resizable()
+                                        .scaledToFit()
+                                }
                             }
                         }
                     }

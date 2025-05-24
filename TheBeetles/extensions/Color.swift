@@ -6,3 +6,8 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+
+extension Color {
+    static let appRed = Color.appCustomRed
+    static let appBlue = Color.appCustomBlue
+}

@@ -17,7 +17,7 @@ struct MapView: View {
     
     @ViewBuilder
     var body: some View {
-        NavigationView {
+        VStack {
             if let url = viewModel.url {
                 WebView(url: url)
             } else {
