@@ -1,12 +1,14 @@
 import Combine
 import Foundation
 import SwiftUI
+import ActivityKit
 
 class Mission: Identifiable {
     var id: UUID = UUID()
     var title: String
     var subtitle: String
     var imageUrl: URL?
+    @Published var isUploading: Bool = false
     
     init(title: String, subtitle: String, imageUrl: URL? = nil) {
         self.title = title
@@ -17,6 +19,7 @@ class Mission: Identifiable {
     func setUrl(url: String) {
         imageUrl = URL(string: url)
     }
+    var previewImage: UIImage? = nil
 }
 
 class MissionsViewModel: ObservableObject {
@@ -26,6 +29,10 @@ class MissionsViewModel: ObservableObject {
     @Published var onImageTap: Bool = false
     @AppStorage("selectedTeam") var team = ""
     var selectedMission: Mission? = nil
+    
+    var title: String? {
+        FirebaseManager.shared.team
+    }
     
     init() {
         fetchMissions()
@@ -40,7 +47,7 @@ class MissionsViewModel: ObservableObject {
             do {
                 let result = await FirebaseManager.shared.fetchMissions()
                 let items = result.compactMap { Mission(title: $0.key, subtitle: $0.value)}
-                await FirebaseManager.shared.fetchImages(team: team) { missions in
+                await FirebaseManager.shared.fetchImages { missions in
                     guard !missions.isEmpty else {
                         self.missions = items
                         return
@@ -52,10 +59,11 @@ class MissionsViewModel: ObservableObject {
     }
     
     func upload(image: [UIImage]) {
+        guard let selectedMission, !image.isEmpty else { return }
+        selectedMission.isUploading = true
         Task { @MainActor in
             do {
-                guard let selectedMission, !image.isEmpty else { return }
-                let url = try await FirebaseManager.shared.upload(image, item: selectedMission, team: team).first
+                let url = try await FirebaseManager.shared.upload(image, item: selectedMission).first
                 selectedMission.imageUrl = url
                 updateAfterUpload(mission: selectedMission)
                 self.selectedMission = nil
@@ -74,6 +82,7 @@ class MissionsViewModel: ObservableObject {
                 updatedData.append(m)
             }
         }
+        mission.isUploading = false
         self.missions = updatedData
     }
     

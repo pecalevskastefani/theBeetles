@@ -4,9 +4,22 @@ import FirebaseStorage
 class FirebaseManager {
     static let shared = FirebaseManager()
     let db = Firestore.firestore()
+    var team: String = ""
+    
+    func addTeam(team: String) async throws {
+        do {
+            self.team = team.lowercased()
+            UserDefaults.standard.set(self.team, forKey: "selectedTeam")
+            try await db.collection(team).addDocument(data: ["name": self.team])
+        }
+        catch {
+            UserDefaults.standard.set(team.lowercased(), forKey: "selectedTeam")
+            self.team = team.lowercased()
+        }
+    }
     
     @MainActor
-    func upload(_ images: [UIImage], item mission: Mission, team: String) async throws -> [URL] {
+    func upload(_ images: [UIImage], item mission: Mission) async throws -> [URL] {
         var urls: [URL] = []
         
         for image in images {
@@ -67,7 +80,7 @@ class FirebaseManager {
     }
     
     @MainActor
-    func fetchImages(team: String, completion: @escaping ([Mission]) -> Void) async {
+    func fetchImages(completion: @escaping ([Mission]) -> Void) async {
         do {
             self.db.collection(team).getDocuments { snapshot, error in
                 if let error = error {
@@ -118,7 +131,7 @@ class FirebaseManager {
         await withCheckedContinuation { continuation in
             self.db.collection("data").document("missions").getDocument { document, error in
                 if let error = error {
-                    print("Failed to fetch map: \(error)")
+                    print("Failed to fetch missions: \(error)")
                     continuation.resume(returning: [:])
                     return
                 }

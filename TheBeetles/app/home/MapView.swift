@@ -20,12 +20,16 @@ struct MapView: View {
         VStack {
             if let url = viewModel.url {
                 WebView(url: url)
+                    .background(Color.appGray)
             } else {
                 VStack {
                     Spacer()
                     ProgressView()
                     Spacer()
                 }
+                .frame(width: UIScreen.main.bounds.width,
+                       height: UIScreen.main.bounds.height)
+                .background(Color.appGray)
             }
         }
         .onAppear(perform: viewModel.start)

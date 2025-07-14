@@ -10,4 +10,5 @@ extension UIApplication {
 extension Color {
     static let appRed = Color.appCustomRed
     static let appBlue = Color.appCustomBlue
+    static let appGray = Color.appLightGray
 }

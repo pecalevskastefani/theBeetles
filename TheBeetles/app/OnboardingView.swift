@@ -3,17 +3,25 @@ import SwiftData
 
 class OnboardingViewModel: ObservableObject {
     @AppStorage("selectedTeam") var selectedTeam: String?
-    @Published var team: String = "Team: "
-    @Published var alreadySelectedTeam: Bool = false
+    @Published var team: String = ""
+    var shouldShowPlaceholder: Bool {
+        team.isEmpty
+    }
+    
+    func addTeam() {
+        Task { @MainActor in
+            try await FirebaseManager.shared.addTeam(team: team)
+        }
+    }
     
     init() {
         UserDefaults.standard.removeObject(forKey: "selectedTeam")
         team = selectedTeam ?? ""
-        alreadySelectedTeam = !team.isEmpty
     }
 }
 struct OnboardingView: View {
     @ObservedObject var viewModel = OnboardingViewModel()
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         NavigationView {
@@ -30,14 +38,11 @@ struct OnboardingView: View {
     }
     
     private var content: some View {
-        VStack(alignment: .center, spacing: 24) {
-            logo
+        VStack(alignment: .center, spacing: 0) {
             info
             addTeamInputField
-            
         }
         .padding(.horizontal, 16)
-        .padding(.top, 36)
         .onTapGesture {
             UIApplication.shared.endEditing()
         }
@@ -46,66 +51,63 @@ struct OnboardingView: View {
     
     @ViewBuilder
     private var addTeamInputField: some View {
-        if viewModel.alreadySelectedTeam {
-            VStack(spacing: 4) {
-                Text("Your team:")
-                    .font(.custom("PlusJakartaSans-Light", size: 20))
-                    .multilineTextAlignment(.center)
-                Text(viewModel.team)
-                    .font(.custom("PlusJakartaSans-Bold", size: 20))
-            }
-        } else {
-            ZStack {
-                if viewModel.team.isEmpty {
-                    Text("Add your team's name")
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                TextField("Add your team's name", text: $viewModel.team)
-                    .multilineTextAlignment(.center)
-                    .overlay(Rectangle().frame(height: 2).padding(.top, 34).foregroundStyle(Color.appBlue.opacity(0.8)))
-                    .frame(width: UIScreen.main.bounds.size.width * 0.5)
-                
-            }
+        ZStack {
+            TextField("Add your team name", text: $viewModel.team)
+                .padding()
+                .frame(width: UIScreen.main.bounds.size.width * 0.6)
+                .background(Color.black.opacity(0.2))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.appGray.opacity(0.5), lineWidth: 2)
+                )
+                .multilineTextAlignment(.center)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
         }
     }
     
     
     private var logo: some View {
-        Image(.theBeetlesLogo)
+        Image(.transparentLogo)
             .resizable()
-            .frame(width: UIScreen.main.bounds.size.width * 0.6,
-                   height: UIScreen.main.bounds.size.height / 4)
+            .renderingMode(.template)
+            .foregroundStyle(Color.appGray.opacity(0.9))
+            .frame(width: UIScreen.main.bounds.size.width * 0.7,
+                   height: 250)
             .accessibilityHidden(true)
             .cornerRadius(12)
     }
     
     private var info: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 0) {
+            logo
             Text("Welcome to")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(Color.appGray.opacity(0.9))
                 .multilineTextAlignment(.center)
-            Text("'The Beetles Treasure Hunt'")
+                .padding(.top, -12)
+            Text("The Beetles Treasure Hunt")
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(Color.appGray.opacity(0.9))
                 .multilineTextAlignment(.center)
+                .padding(.bottom, 24)
         }
     }
     
     private var action: some View {
-        NavigationLink(destination: HomeView(selectedTeam: viewModel.team)) {
+        NavigationLink(destination: HomeView()) {
             if !viewModel.team.isEmpty {
                 Text("Get started")
                     .font(.custom("PlusJakartaSans-Bold", size: 16))
                     .padding(.vertical, 10)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appGray.opacity(0.9))
                     .background(RoundedRectangle(cornerRadius: 6)
                         .fill(Color.appRed)
                         .frame(width: UIScreen.main.bounds.size.width * 0.4)
                     )
                     .padding(.bottom, 24)
             }
-        }
+        }.simultaneousGesture(TapGesture().onEnded(viewModel.addTeam))
     }
 }
 
