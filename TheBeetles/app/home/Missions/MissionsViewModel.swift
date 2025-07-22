@@ -99,9 +99,11 @@ class MissionsViewModel: ObservableObject {
         if mission.imageUrl != nil {
             onImageTap.toggle()
             selectedMission = mission
-        } else {
-            onSubmitTap()
-            selectedMission = mission
         }
+    }
+    
+    func addImage(mission: Mission) {
+        onSubmitTap()
+        selectedMission = mission
     }
 }

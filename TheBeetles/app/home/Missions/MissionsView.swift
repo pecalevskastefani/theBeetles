@@ -38,7 +38,8 @@ struct MissionsView: View {
             } else {
                 ForEach(viewModel.missions) { mission in
                     MissionCardView(mission: mission,
-                                    onTapAction: { viewModel.onImageTap(mission: mission) })
+                                    onImageTapAction: { viewModel.onImageTap(mission: mission) },
+                                    onAddNewImageAction: { viewModel.addImage(mission: mission) })
                     .padding(.vertical, 16)
                     .sheet(isPresented: $viewModel.showImagePicker, onDismiss: {
                         viewModel.upload(image: selectedImages)
@@ -50,11 +51,24 @@ struct MissionsView: View {
                     }) {
                         if let image = viewModel.selectedMission?.imageUrl {
                             VStack(alignment: .center, spacing: 0) {
+                                HStack {
+                                    Spacer()
+                                    Button(action: { viewModel.onImageTap.toggle() }) {
+                                        Image(systemName: "xmark")
+                                            .foregroundColor(Color.appCustomRed.opacity(0.5))
+                                            .frame(width: 40, height: 40)
+                                            .font(.system(size: 28))
+                                            .padding(.trailing, 8)
+                                            .padding(.top, 4)
+                                    }
+                                }
+                                Spacer()
                                 VStack {
                                     WebImage(url: image)
                                         .resizable()
                                         .scaledToFit()
                                 }
+                                Spacer()
                             }
                         }
                     }

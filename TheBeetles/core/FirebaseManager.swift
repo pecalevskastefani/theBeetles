@@ -8,13 +8,13 @@ class FirebaseManager {
     
     func addTeam(team: String) async throws {
         do {
-            self.team = team.lowercased()
-            UserDefaults.standard.set(self.team, forKey: "selectedTeam")
-            try await db.collection(team).addDocument(data: ["name": self.team])
+            self.team = team
+            UserDefaults.standard.set(team.lowercased(), forKey: "selectedTeam")
+            try await db.collection(team.lowercased()).addDocument(data: ["name": team.lowercased()])
         }
         catch {
             UserDefaults.standard.set(team.lowercased(), forKey: "selectedTeam")
-            self.team = team.lowercased()
+            self.team = team
         }
     }
     
@@ -29,16 +29,16 @@ class FirebaseManager {
             }
             
             let imageId = UUID().uuidString
-            let storageRef = Storage.storage().reference().child("\(team)/\(mission.title)/\(imageId).jpg")
+            let storageRef = Storage.storage().reference().child("\(team.lowercased())/\(mission.title)/\(imageId).jpg")
             
             do {
                 if try await putData(imageData: imageData, storageRef: storageRef) {
-                    if let urlString = try await download(imageString: imageId, from: "\(team)/\(mission.title)"){
+                    if let urlString = try await download(imageString: imageId, from: "\(team.lowercased())/\(mission.title)"){
                         if let url = URL(string: urlString) {
                             urls.append(url)
                         }
                         let timestamp = Timestamp(date: Date())
-                        try await db.collection(team).document(imageId).setData(["id": mission.title,
+                        try await db.collection(team.lowercased()).document(imageId).setData(["id": mission.title,
                                                                                  "desc": mission.subtitle,
                                                                                  "url": urlString,
                                                                                  "timestamp": timestamp])
@@ -82,7 +82,7 @@ class FirebaseManager {
     @MainActor
     func fetchImages(completion: @escaping ([Mission]) -> Void) async {
         do {
-            self.db.collection(team).getDocuments { snapshot, error in
+            self.db.collection(team.lowercased()).getDocuments { snapshot, error in
                 if let error = error {
                     print("Failed to fetch images: \(error)")
                     completion([])

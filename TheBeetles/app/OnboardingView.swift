@@ -55,7 +55,6 @@ struct OnboardingView: View {
             TextField("Add your team name", text: $viewModel.team)
                 .padding()
                 .frame(width: UIScreen.main.bounds.size.width * 0.6)
-                .background(Color.black.opacity(0.2))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
